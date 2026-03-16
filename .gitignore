@@ -1,2 +1,36 @@
-"# Private documentation - not for version control
-private_documentation/
+
+.env
+.env.*
+!.env.example          # the example/template IS safe to commit
+
+
+# ============================================================
+#  Java / Maven
+# ============================================================
+common/**/target/
+
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+
+# VS Code Java
+.factorypath
+.vscode/
+
+
+
+
+.DS_Store
+Thumbs.db
+desktop.ini
