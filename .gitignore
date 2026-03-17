@@ -3,6 +3,7 @@
 .env.*
 !.env.example          # the example/template IS safe to commit
 
+private_documentation/
 
 # ============================================================
 #  Java / Maven
