@@ -15,17 +15,17 @@ public class RegisterRequest {
 
     @NotBlank(message = "Full name is required")
     @Size(min = 2, max = 100, message = "Full name must be between 2 and 100 characters")
-    private String fullName;
+    String fullName;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     @Size(max = 150, message = "Email must not exceed 150 characters")
-    private String email;
+    String email;
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters long")
-    private String password;
+    String password;
 
     @Builder.Default
-    private Role role = Role.STUDENT;
+    Role role = Role.STUDENT;
 }
