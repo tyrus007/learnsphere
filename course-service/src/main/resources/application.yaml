@@ -1,0 +1,22 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: course-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/course_db}
+    username: ${POSTGRES_USER:learnsphere}
+    password: ${POSTGRES_PASSWORD:learnsphere}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    # dialect is intentionally omitted — Spring Boot 3.x auto-detects
+    # PostgreSQLDialect from the postgresql driver on the classpath
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
