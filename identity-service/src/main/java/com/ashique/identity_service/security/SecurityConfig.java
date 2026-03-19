@@ -1,4 +1,4 @@
-package com.ashique.identity_service.config;
+package com.ashique.identity_service.security;
 
 import com.ashique.learnsphere.jwt.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;

@@ -1,9 +1,10 @@
 package com.ashique.courseservice.services;
 
 import com.ashique.courseservice.dto.CreateLessonRequest;
+import com.ashique.courseservice.dto.InternalLessonExistsResponse;
 import com.ashique.courseservice.dto.LessonResponse;
-import com.ashique.courseservice.entity.Module;
 import com.ashique.courseservice.entity.Lesson;
+import com.ashique.courseservice.entity.Module;
 import com.ashique.courseservice.repository.LessonRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,17 @@ public class LessonService {
         return lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new com.ashique.courseservice.exceptions.ResourceNotFoundException(
                         "Lesson not found with id: " + lessonId));
+    }
+
+    public InternalLessonExistsResponse getLessonExists(UUID lessonId) {
+        return lessonRepository.findById(lessonId)
+                .map(lesson -> InternalLessonExistsResponse.builder()
+                        .exists(true)
+                        .courseId(lesson.getModule().getCourse().getId())
+                        .build())
+                .orElseGet(() -> InternalLessonExistsResponse.builder()
+                        .exists(false)
+                        .build());
     }
 
     private LessonResponse toLessonResponse(Lesson lesson) {

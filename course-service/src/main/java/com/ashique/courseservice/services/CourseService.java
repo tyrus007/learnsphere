@@ -3,6 +3,8 @@ package com.ashique.courseservice.services;
 import com.ashique.courseservice.dto.CourseDetailResponse;
 import com.ashique.courseservice.dto.CourseResponse;
 import com.ashique.courseservice.dto.CreateCourseRequest;
+import com.ashique.courseservice.dto.InternalCourseExistsResponse;
+import com.ashique.courseservice.dto.InternalCourseLessonCountResponse;
 import com.ashique.courseservice.dto.LessonResponse;
 import com.ashique.courseservice.dto.ModuleResponse;
 import com.ashique.courseservice.dto.UpdateCourseRequest;
@@ -102,12 +104,29 @@ public class CourseService {
                 .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
     }
 
+    public InternalCourseExistsResponse getCourseExists(UUID courseId) {
+        return courseRepository.findById(courseId)
+                .map(course -> InternalCourseExistsResponse.builder()
+                        .exists(true)
+                        .status(course.getStatus())
+                        .build())
+                .orElseGet(() -> InternalCourseExistsResponse.builder()
+                        .exists(false)
+                        .build());
+    }
+
     public long getLessonCountByCourseId(UUID courseId) {
         if (!courseRepository.existsById(courseId)) {
             throw new ResourceNotFoundException("Course not found with id: " + courseId);
         }
 
         return lessonRepository.countByModuleCourseId(courseId);
+    }
+
+    public InternalCourseLessonCountResponse getLessonCountResponse(UUID courseId) {
+        return InternalCourseLessonCountResponse.builder()
+                .lessonCount(getLessonCountByCourseId(courseId))
+                .build();
     }
 
     public Course getOwnedCourse(UUID userId, UUID courseId) {
