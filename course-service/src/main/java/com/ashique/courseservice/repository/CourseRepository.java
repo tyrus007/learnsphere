@@ -13,6 +13,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface CourseRepository extends JpaRepository<Course, UUID> {
     List<Course> findAllByStatusOrderByCreatedAtDesc(CourseStatus status);
+    List<Course> findAllByInstructorIdOrderByCreatedAtDesc(UUID instructorId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)          // used for controlling concurrency. locks the row/record while the users update it
     @Query("select c from Course c where c.id = :courseId")

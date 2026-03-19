@@ -74,6 +74,13 @@ public class CourseService {
                 .toList();
     }
 
+    public List<CourseResponse> getMyCourses(UUID userId) {
+        return courseRepository.findAllByInstructorIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toCourseResponse)
+                .toList();
+    }
+
     public CourseDetailResponse getCourseDetail(UUID courseId) {
         Course course = getCourseById(courseId);
 

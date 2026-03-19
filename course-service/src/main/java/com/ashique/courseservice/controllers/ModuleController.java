@@ -1,0 +1,81 @@
+package com.ashique.courseservice.controllers;
+
+import com.ashique.courseservice.dto.CreateModuleRequest;
+import com.ashique.courseservice.dto.ModuleResponse;
+import com.ashique.courseservice.entity.Course;
+import com.ashique.courseservice.entity.CourseStatus;
+import com.ashique.courseservice.exceptions.ForbiddenOperationException;
+import com.ashique.courseservice.services.CourseService;
+import com.ashique.courseservice.services.ModuleService;
+import com.ashique.learnsphere.jwt.AuthenticatedUser;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/courses/{courseId}/modules")
+public class ModuleController {
+
+    private final ModuleService moduleService;
+    private final CourseService courseService;
+
+    public ModuleController(ModuleService moduleService, CourseService courseService) {
+        this.moduleService = moduleService;
+        this.courseService = courseService;
+    }
+
+    @PostMapping
+    @PreAuthorize("hasRole('INSTRUCTOR')")
+    public ResponseEntity<ModuleResponse> createModule(
+            @PathVariable UUID courseId,
+            @Valid @RequestBody CreateModuleRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(moduleService.createModule(getAuthenticatedUser().userId(), courseId, request));
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ModuleResponse>> getModulesByCourseId(@PathVariable UUID courseId) {
+        Course course = courseService.getCourseById(courseId);
+
+        if (course.getStatus() != CourseStatus.PUBLISHED) {      // Not_Published courses are only accessed by Instructor
+            AuthenticatedUser authenticatedUser = getAuthenticatedUserOrNull();
+            if (authenticatedUser == null || !course.getInstructorId().equals(authenticatedUser.userId())) {
+                throw new ForbiddenOperationException("You do not have access to this course");
+            }
+        }
+
+        return ResponseEntity.ok(moduleService.getModulesByCourseId(courseId));
+    }
+
+    private AuthenticatedUser getAuthenticatedUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof UsernamePasswordAuthenticationToken token
+                && token.getPrincipal() instanceof AuthenticatedUser user) {
+            return user;
+        }
+
+        throw new ForbiddenOperationException("Authentication is required");
+    }
+
+    private AuthenticatedUser getAuthenticatedUserOrNull() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof UsernamePasswordAuthenticationToken token
+                && token.getPrincipal() instanceof AuthenticatedUser user) {
+            return user;
+        }
+
+        return null;
+    }
+}
