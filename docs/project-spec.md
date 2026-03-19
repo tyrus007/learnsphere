@@ -23,7 +23,7 @@
 | Layer              | Technology                                          |
 |--------------------|-----------------------------------------------------|
 | Language           | Java 21                                             |
-| Framework          | Spring Boot 3.x                                     |
+| Framework          | Spring Boot 3.12                                    |
 | Security           | Spring Security + JWT (JJWT 0.12.x)                |
 | Database           | PostgreSQL 16                                       |
 | ORM                | Spring Data JPA (Hibernate)                         |
