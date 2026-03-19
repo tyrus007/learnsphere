@@ -1,7 +1,6 @@
 package com.ashique.courseservice.dto;
 
 import com.ashique.courseservice.entity.ContentType;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -22,10 +21,6 @@ public class CreateLessonRequest {
     ContentType contentType;
 
     String contentUrlOrBody;
-
-    @NotNull(message = "Position is required")
-    @Min(value = 1, message = "Position must be greater than 0")
-    Integer position;
 
     @Builder.Default
     Boolean isPreview = false;

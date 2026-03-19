@@ -276,9 +276,9 @@ CREATE TABLE lessons (
 | `UpdateCourseRequest` | `title`, `description`, `level`, `category` |
 | `CourseResponse` | `id`, `instructorId`, `title`, `description`, `level`, `category`, `status`, `createdAt` |
 | `CourseDetailResponse` | All `CourseResponse` fields + list of `ModuleResponse` |
-| `CreateModuleRequest` | `title`, `position` |
+| `CreateModuleRequest` | `title` |
 | `ModuleResponse` | `id`, `courseId`, `title`, `position`, list of `LessonResponse` |
-| `CreateLessonRequest` | `title`, `contentType`, `contentUrlOrBody`, `position`, `isPreview` |
+| `CreateLessonRequest` | `title`, `contentType`, `contentUrlOrBody`, `isPreview` |
 | `LessonResponse` | `id`, `moduleId`, `title`, `contentType`, `contentUrlOrBody`, `position`, `isPreview` |
 
 #### Service Methods
@@ -295,6 +295,19 @@ CREATE TABLE lessons (
 | `getCourseDetail(courseId)` | Returns course with full modules and lessons |
 | `getCourseById(courseId)` | Returns course (used by internal calls) |
 | `getLessonCountByCourseId(courseId)` | Count of all lessons across all modules |
+
+**`ModuleService`:**
+
+| Method | Behaviour |
+|--------|-----------|
+| `createModule(userId, courseId, request)` | Verifies ownership and assigns the next module position automatically |
+| `getModulesByCourseId(courseId)` | Returns modules ordered by position |
+
+**`LessonService`:**
+
+| Method | Behaviour |
+|--------|-----------|
+| `createLesson(userId, moduleId, request)` | Verifies ownership and assigns the next lesson position automatically |
 
 #### REST Endpoints — Public/Authenticated
 
