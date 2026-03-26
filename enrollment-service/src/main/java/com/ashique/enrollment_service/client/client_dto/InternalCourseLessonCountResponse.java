@@ -1,4 +1,4 @@
-package com.ashique.enrollment_service.client.dto;
+package com.ashique.enrollment_service.client.client_dto;
 
 public record InternalCourseLessonCountResponse(Long lessonCount) {
 }

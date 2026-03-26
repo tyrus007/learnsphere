@@ -1,14 +1,15 @@
 package com.ashique.enrollment_service.client;
 
-import com.ashique.enrollment_service.client.dto.InternalCourseExistsResponse;
-import com.ashique.enrollment_service.client.dto.InternalCourseLessonCountResponse;
+import com.ashique.enrollment_service.client.client_dto.InternalCourseExistsResponse;
+import com.ashique.enrollment_service.client.client_dto.InternalCourseLessonCountResponse;
+import com.ashique.enrollment_service.client.client_dto.InternalCourseSummaryResponse;
 import com.ashique.enrollment_service.exception.CourseServiceClientException;
+import com.ashique.enrollment_service.exception.ForbiddenOperationException;
 import com.ashique.enrollment_service.exception.ResourceNotFoundException;
 import com.ashique.enrollment_service.exception.ServiceUnavailableException;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpClientErrorException;
@@ -20,6 +21,8 @@ import org.springframework.web.client.RestClientException;
 public class CourseServiceClient {
 
     private static final String COURSE_EXISTS_URI = "/api/internal/courses/{courseId}/exists";
+
+    private static final String COURSE_SUMMARY_URI = "/api/internal/courses/{courseId}/summary";
 
     private static final String COURSE_LESSON_COUNT_URI = "/api/internal/courses/{courseId}/lesson-count";
 
@@ -51,6 +54,15 @@ public class CourseServiceClient {
                 "Course not found with id: " + courseId);
     }
 
+    public InternalCourseSummaryResponse getCourseSummary(UUID courseId, String authorizationHeader) {
+        return executeGet(
+                COURSE_SUMMARY_URI,
+                courseId,
+                authorizationHeader,
+                InternalCourseSummaryResponse.class,
+                "Course not found with id: " + courseId);
+    }
+
     private <T> T executeGet(
             String uri,
             UUID courseId,
@@ -74,6 +86,8 @@ public class CourseServiceClient {
             return response;
         } catch (HttpClientErrorException.NotFound ex) {
             throw new ResourceNotFoundException(notFoundMessage, ex);
+        } catch (HttpClientErrorException.Forbidden ex) {
+            throw new ForbiddenOperationException("You do not have access to this course", ex);
         } catch (ResourceAccessException ex) {
             throw new ServiceUnavailableException("Course Service is unavailable", ex);
         } catch (RestClientException ex) {

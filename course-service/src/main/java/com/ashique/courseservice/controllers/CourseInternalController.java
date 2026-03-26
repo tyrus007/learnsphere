@@ -2,6 +2,7 @@ package com.ashique.courseservice.controllers;
 
 import com.ashique.courseservice.dto.InternalCourseExistsResponse;
 import com.ashique.courseservice.dto.InternalCourseLessonCountResponse;
+import com.ashique.courseservice.dto.InternalCourseSummaryResponse;
 import com.ashique.courseservice.dto.InternalLessonExistsResponse;
 import com.ashique.courseservice.services.CourseService;
 import com.ashique.courseservice.services.LessonService;
@@ -27,6 +28,11 @@ public class CourseInternalController {
     @GetMapping("/courses/{courseId}/exists")
     public ResponseEntity<InternalCourseExistsResponse> getCourseExists(@PathVariable UUID courseId) {
         return ResponseEntity.ok(courseService.getCourseExists(courseId));
+    }
+
+    @GetMapping("/courses/{courseId}/summary")
+    public ResponseEntity<InternalCourseSummaryResponse> getCourseSummary(@PathVariable UUID courseId) {
+        return ResponseEntity.ok(courseService.getCourseSummary(courseId));
     }
 
     @GetMapping("/courses/{courseId}/lesson-count")
