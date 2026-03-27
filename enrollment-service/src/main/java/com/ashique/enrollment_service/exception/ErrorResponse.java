@@ -1,4 +1,4 @@
-package com.ashique.courseservice.exceptions;
+package com.ashique.enrollment_service.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.Instant;

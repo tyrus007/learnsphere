@@ -328,6 +328,7 @@ CREATE TABLE lessons (
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/internal/courses/{courseId}/exists` | Returns `{ "exists": true/false, "status": "PUBLISHED" }` |
+| `GET` | `/api/internal/courses/{courseId}/summary` | Returns `{ "exists": true/false, "status": "PUBLISHED", "instructorId": "..." }` |
 | `GET` | `/api/internal/courses/{courseId}/lesson-count` | Returns `{ "lessonCount": 12 }` |
 | `GET` | `/api/internal/lessons/{lessonId}/exists` | Returns `{ "exists": true/false, "courseId": "..." }` |
 
@@ -367,6 +368,7 @@ CREATE TABLE enrollments (
 | Method | Calls | Behaviour on error |
 |--------|-------|--------------------|
 | `getCourseExists(courseId, jwtToken)` | `GET /api/internal/courses/{courseId}/exists` | `404` from Course → domain exception; unreachable → `ServiceUnavailableException` |
+| `getCourseSummary(courseId, jwtToken)` | `GET /api/internal/courses/{courseId}/summary` | Same error handling |
 | `getLessonCount(courseId, jwtToken)` | `GET /api/internal/courses/{courseId}/lesson-count` | Same error handling |
 
 The JWT token is always forwarded in the `Authorization` header.
@@ -390,9 +392,9 @@ Call is wrapped in try-catch. Failure logs a warning but does **not** fail the e
 
 | Method | Behaviour |
 |--------|-----------|
-| `enroll(userId, request)` | Validates course exists + is published (`400` if not), checks for duplicate (`409`), saves enrollment, fires notification (non-critical) |
+| `enroll(userId, request)` | Uses internal course summary to validate course exists + is published (`400` if not), checks for duplicate (`409`), saves enrollment, fires notification (non-critical) |
 | `getMyEnrollments(userId)` | Returns all enrollments where `studentId = userId` |
-| `getEnrollmentsForCourse(courseId, userId)` | Verifies caller is the course instructor, returns enrolled student list |
+| `getEnrollmentsForCourse(courseId, userId)` | Uses internal course summary to verify caller is the course instructor, returns enrolled student list |
 | `isEnrolled(studentId, courseId)` | Returns boolean |
 
 #### REST Endpoints

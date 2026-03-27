@@ -5,6 +5,7 @@ import com.ashique.courseservice.dto.CourseResponse;
 import com.ashique.courseservice.dto.CreateCourseRequest;
 import com.ashique.courseservice.dto.InternalCourseExistsResponse;
 import com.ashique.courseservice.dto.InternalCourseLessonCountResponse;
+import com.ashique.courseservice.dto.InternalCourseSummaryResponse;
 import com.ashique.courseservice.dto.LessonResponse;
 import com.ashique.courseservice.dto.ModuleResponse;
 import com.ashique.courseservice.dto.UpdateCourseRequest;
@@ -105,12 +106,22 @@ public class CourseService {
     }
 
     public InternalCourseExistsResponse getCourseExists(UUID courseId) {
+        InternalCourseSummaryResponse courseSummary = getCourseSummary(courseId);
+
+        return InternalCourseExistsResponse.builder()
+                .exists(courseSummary.getExists())
+                .status(courseSummary.getStatus())
+                .build();
+    }
+
+    public InternalCourseSummaryResponse getCourseSummary(UUID courseId) {
         return courseRepository.findById(courseId)
-                .map(course -> InternalCourseExistsResponse.builder()
+                .map(course -> InternalCourseSummaryResponse.builder()
                         .exists(true)
                         .status(course.getStatus())
+                        .instructorId(course.getInstructorId())
                         .build())
-                .orElseGet(() -> InternalCourseExistsResponse.builder()
+                .orElseGet(() -> InternalCourseSummaryResponse.builder()
                         .exists(false)
                         .build());
     }
