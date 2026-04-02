@@ -456,7 +456,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Module 1: Getting Started\",\n  \"position\": 1\n}"
+              "raw": "{\n  \"title\": \"Module 1: Getting Started\"\n}"
             },
             "url": {
               "raw": "{{gateway_url}}/api/courses/{{course_id}}/modules",
@@ -492,7 +492,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Lesson 1: What is a Microservice?\",\n  \"contentType\": \"TEXT\",\n  \"contentUrlOrBody\": \"A microservice is a small, independently deployable service...\",\n  \"position\": 1,\n  \"isPreview\": true\n}"
+              "raw": "{\n  \"title\": \"Lesson 1: What is a Microservice?\",\n  \"contentType\": \"TEXT\",\n  \"contentUrlOrBody\": \"A microservice is a small, independently deployable service...\",\n  \"isPreview\": true\n}"
             },
             "url": {
               "raw": "{{gateway_url}}/api/modules/{{module_id}}/lessons",

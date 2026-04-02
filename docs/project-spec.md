@@ -23,7 +23,7 @@
 | Layer              | Technology                                          |
 |--------------------|-----------------------------------------------------|
 | Language           | Java 21                                             |
-| Framework          | Spring Boot 3.x                                     |
+| Framework          | Spring Boot 3.12                                    |
 | Security           | Spring Security + JWT (JJWT 0.12.x)                |
 | Database           | PostgreSQL 16                                       |
 | ORM                | Spring Data JPA (Hibernate)                         |
@@ -276,9 +276,9 @@ CREATE TABLE lessons (
 | `UpdateCourseRequest` | `title`, `description`, `level`, `category` |
 | `CourseResponse` | `id`, `instructorId`, `title`, `description`, `level`, `category`, `status`, `createdAt` |
 | `CourseDetailResponse` | All `CourseResponse` fields + list of `ModuleResponse` |
-| `CreateModuleRequest` | `title`, `position` |
+| `CreateModuleRequest` | `title` |
 | `ModuleResponse` | `id`, `courseId`, `title`, `position`, list of `LessonResponse` |
-| `CreateLessonRequest` | `title`, `contentType`, `contentUrlOrBody`, `position`, `isPreview` |
+| `CreateLessonRequest` | `title`, `contentType`, `contentUrlOrBody`, `isPreview` |
 | `LessonResponse` | `id`, `moduleId`, `title`, `contentType`, `contentUrlOrBody`, `position`, `isPreview` |
 
 #### Service Methods
@@ -295,6 +295,19 @@ CREATE TABLE lessons (
 | `getCourseDetail(courseId)` | Returns course with full modules and lessons |
 | `getCourseById(courseId)` | Returns course (used by internal calls) |
 | `getLessonCountByCourseId(courseId)` | Count of all lessons across all modules |
+
+**`ModuleService`:**
+
+| Method | Behaviour |
+|--------|-----------|
+| `createModule(userId, courseId, request)` | Verifies ownership and assigns the next module position automatically |
+| `getModulesByCourseId(courseId)` | Returns modules ordered by position |
+
+**`LessonService`:**
+
+| Method | Behaviour |
+|--------|-----------|
+| `createLesson(userId, moduleId, request)` | Verifies ownership and assigns the next lesson position automatically |
 
 #### REST Endpoints — Public/Authenticated
 
@@ -315,6 +328,7 @@ CREATE TABLE lessons (
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/internal/courses/{courseId}/exists` | Returns `{ "exists": true/false, "status": "PUBLISHED" }` |
+| `GET` | `/api/internal/courses/{courseId}/summary` | Returns `{ "exists": true/false, "status": "PUBLISHED", "instructorId": "..." }` |
 | `GET` | `/api/internal/courses/{courseId}/lesson-count` | Returns `{ "lessonCount": 12 }` |
 | `GET` | `/api/internal/lessons/{lessonId}/exists` | Returns `{ "exists": true/false, "courseId": "..." }` |
 
@@ -354,6 +368,7 @@ CREATE TABLE enrollments (
 | Method | Calls | Behaviour on error |
 |--------|-------|--------------------|
 | `getCourseExists(courseId, jwtToken)` | `GET /api/internal/courses/{courseId}/exists` | `404` from Course → domain exception; unreachable → `ServiceUnavailableException` |
+| `getCourseSummary(courseId, jwtToken)` | `GET /api/internal/courses/{courseId}/summary` | Same error handling |
 | `getLessonCount(courseId, jwtToken)` | `GET /api/internal/courses/{courseId}/lesson-count` | Same error handling |
 
 The JWT token is always forwarded in the `Authorization` header.
@@ -377,9 +392,9 @@ Call is wrapped in try-catch. Failure logs a warning but does **not** fail the e
 
 | Method | Behaviour |
 |--------|-----------|
-| `enroll(userId, request)` | Validates course exists + is published (`400` if not), checks for duplicate (`409`), saves enrollment, fires notification (non-critical) |
+| `enroll(userId, request)` | Uses internal course summary to validate course exists + is published (`400` if not), checks for duplicate (`409`), saves enrollment, fires notification (non-critical) |
 | `getMyEnrollments(userId)` | Returns all enrollments where `studentId = userId` |
-| `getEnrollmentsForCourse(courseId, userId)` | Verifies caller is the course instructor, returns enrolled student list |
+| `getEnrollmentsForCourse(courseId, userId)` | Uses internal course summary to verify caller is the course instructor, returns enrolled student list |
 | `isEnrolled(studentId, courseId)` | Returns boolean |
 
 #### REST Endpoints

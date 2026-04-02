@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans, sans-serif); background: transparent; color: var(--color-text-primary); padding: 0; }
+.canvas { position: relative; width: 100%; overflow-x: auto; }
+svg.overlay { position: absolute; top: 0; left: 0; width: 100%; pointer-events: none; }
+.grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 12px; }
+.db-col { display: flex; flex-direction: column; gap: 10px; }
+.db-header { font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-align: center; padding: 4px 0 6px; color: var(--color-text-tertiary); border-bottom: 1px solid var(--color-border-tertiary); margin-bottom: 2px; text-transform: uppercase; }
+.entity { border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border-tertiary); background: var(--color-background-secondary); }
+.entity-header { padding: 7px 10px; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.entity-header .icon { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.entity-body { padding: 0; }
+.field { display: flex; align-items: center; gap: 6px; padding: 4px 10px; font-size: 11px; border-top: 1px solid var(--color-border-tertiary); color: var(--color-text-secondary); }
+.field:first-child { border-top: none; }
+.field-name { flex: 1; font-weight: 400; }
+.field-type { font-size: 10px; color: var(--color-text-tertiary); font-family: var(--font-mono, monospace); }
+.badge { font-size: 9px; padding: 1px 5px; border-radius: 3px; font-weight: 500; flex-shrink: 0; }
+.badge-pk { background: #AFA9EC; color: #26215C; }
+.badge-fk { background: #9FE1CB; color: #04342C; }
+.badge-ref { background: #FAC775; color: #412402; border: 1px dashed #BA7517; }
+.badge-enum { background: #B4B2A9; color: #2C2C2A; }
+
+/* service color dots */
+.dot-identity { background: #1D9E75; }
+.dot-course { background: #1D9E75; }
+.dot-enrollment { background: #378ADD; }
+.dot-progress { background: #378ADD; }
+.dot-notification { background: #BA7517; }
+
+/* entity header tint per service */
+.hdr-teal { background: #E1F5EE; color: #085041; }
+.hdr-blue { background: #E6F1FB; color: #0C447C; }
+.hdr-amber { background: #FAEEDA; color: #633806; }
+@media (prefers-color-scheme: dark) {
+  .hdr-teal { background: #085041; color: #9FE1CB; }
+  .hdr-blue { background: #042C53; color: #B5D4F4; }
+  .hdr-amber { background: #412402; color: #FAC775; }
+  .badge-pk { background: #3C3489; color: #CECBF6; }
+  .badge-fk { background: #085041; color: #9FE1CB; }
+  .badge-ref { background: #412402; color: #FAC775; border-color: #BA7517; }
+  .badge-enum { background: #444441; color: #D3D1C7; }
+}
+
+.note { font-size: 11px; color: var(--color-text-tertiary); padding: 8px 12px; border-top: 1px dashed var(--color-border-tertiary); margin-top: 2px; line-height: 1.5; }
+.legend { display: flex; gap: 16px; align-items: center; padding: 10px 12px; font-size: 11px; color: var(--color-text-secondary); border-top: 1px solid var(--color-border-tertiary); flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; }
+</style>
+</head>
+<body>
+
+<!-- Legend at top -->
+<div class="legend">
+  <span style="font-weight:500;color:var(--color-text-primary);font-size:11px">LearnSphere · Database entities</span>
+  <div class="legend-item"><span class="badge badge-pk">PK</span> primary key</div>
+  <div class="legend-item"><span class="badge badge-fk">FK</span> in-DB foreign key</div>
+  <div class="legend-item"><span class="badge badge-ref">REF</span> cross-service UUID reference (no DB FK)</div>
+  <div class="legend-item"><span class="badge badge-enum">ENUM</span> enum-backed varchar</div>
+</div>
+
+<div class="grid">
+
+  <!-- IDENTITY DB -->
+  <div class="db-col">
+    <div class="db-header">identity_db · :8081</div>
+    <div class="entity" id="e-users">
+      <div class="entity-header hdr-teal">
+        <span class="icon dot-identity"></span>users
+      </div>
+      <div class="entity-body">
+        <div class="field"><span class="field-name">id</span><span class="badge badge-pk">PK</span><span class="field-type">uuid</span></div>
+        <div class="field"><span class="field-name">full_name</span><span class="field-type">varchar</span></div>
+        <div class="field"><span class="field-name">email</span><span class="field-type">varchar · unique</span></div>
+        <div class="field"><span class="field-name">password_hash</span><span class="field-type">varchar</span></div>
+        <div class="field"><span class="field-name">role</span><span class="badge badge-enum">ENUM</span><span class="field-type">STUDENT|INSTRUCTOR</span></div>
+        <div class="field"><span class="field-name">created_at</span><span class="field-type">timestamp</span></div>
+        <div class="field"><span class="field-name">updated_at</span><span class="field-type">timestamp</span></div>
+      </div>
+    </div>
+    <div class="note">Owns all identity. Emits signed JWT containing userId, email, role. No other service stores credentials.</div>
+  </div>
+
+  <!-- COURSE DB -->
+  <div class="db-col">
+    <div class="db-header">course_db · :8082</div>
+    <div class="entity" id="e-courses">
+      <div class="entity-header hdr-teal">
+        <span class="icon dot-course"></span>courses
+      </div>
+      <div class="entity-body">
+        <div class="field"><span class="field-name">id</span><span class="badge badge-pk">PK</span><span class="field-type">uuid</span></div>
+        <div class="field"><span class="field-name">instructor_id</span><span class="badge badge-ref">REF</span><span class="field-type">users.id</span></div>
+        <div class="field"><span class="field-name">title</span><span class="field-type">varchar</span></div>
+        <div class="field"><span class="field-name">description</span><span class="field-type">text</span></div>
+        <div class="field"><span class="field-name">level</span><span class="badge badge-enum">ENUM</span><span class="field-type">BEGINNER…</span></div>
+        <div class="field"><span class="field-name">category</span><span class="field-type">varchar</span></div>
+        <div class="field"><span class="field-name">status</span><span class="badge badge-enum">ENUM</span><span class="field-type">DRAFT|PUBLISHED…</span></div>
+        <div class="field"><span class="field-name">created_at</span><span class="field-type">timestamp</span></div>
+        <div class="field"><span class="field-name">updated_at</span><span class="field-type">timestamp</span></div>
+      </div>
+    </div>
+    <div class="entity" id="e-modules">
+      <div class="entity-header hdr-teal">
+        <span class="icon dot-course"></span>modules
+      </div>
+      <div class="entity-body">
+        <div class="field"><span class="field-name">id</span><span class="badge badge-pk">PK</span><span class="field-type">uuid</span></div>
+        <div class="field"><span class="field-name">course_id</span><span class="badge badge-fk">FK</span><span class="field-type">courses.id cascade</span></div>
+        <div class="field"><span class="field-name">title</span><span class="field-type">varchar</span></div>
+        <div class="field"><span class="field-name">position</span><span class="field-type">int</span></div>
+      </div>
+    </div>
+    <div class="entity" id="e-lessons">
+      <div class="entity-header hdr-teal">
+        <span class="icon dot-course"></span>lessons
+      </div>
+      <div class="entity-body">
+        <div class="field"><span class="field-name">id</span><span class="badge badge-pk">PK</span><span class="field-type">uuid</span></div>
+        <div class="field"><span class="field-name">module_id</span><span class="badge badge-fk">FK</span><span class="field-type">modules.id cascade</span></div>
+        <div class="field"><span class="field-name">title</span><span class="field-type">varchar</span></div>
+        <div class="field"><span class="field-name">content_type</span><span class="badge badge-enum">ENUM</span><span class="field-type">TEXT|VIDEO|LINK</span></div>
+        <div class="field"><span class="field-name">content_url_or_body</span><span class="field-type">text</span></div>
+        <div class="field"><span class="field-name">position</span><span class="field-type">int</span></div>
+        <div class="field"><span class="field-name">is_preview</span><span class="field-type">boolean</span></div>
+      </div>
+    </div>
+    <div class="note">Source of truth for catalog. Internal REST endpoints expose course/lesson existence checks used by other services.</div>
+  </div>
+
+  <!-- ENROLLMENT DB -->
+  <div class="db-col">
+    <div class="db-header">enrollment_db · :8083</div>
+    <div class="entity" id="e-enrollments">
+      <div class="entity-header hdr-blue">
+        <span class="icon dot-enrollment"></span>enrollments
+      </div>
+      <div class="entity-body">
+        <div class="field"><span class="field-name">id</span><span class="badge badge-pk">PK</span><span class="field-type">uuid</span></div>
+        <div class="field"><span class="field-name">student_id</span><span class="badge badge-ref">REF</span><span class="field-type">users.id</span></div>
+        <div class="field"><span class="field-name">course_id</span><span class="badge badge-ref">REF</span><span class="field-type">courses.id</span></div>
+        <div class="field"><span class="field-name">status</span><span class="badge badge-enum">ENUM</span><span class="field-type">ENROLLED|CANCELLED…</span></div>
+        <div class="field"><span class="field-name">enrolled_at</span><span class="field-type">timestamp</span></div>
+        <div class="field" style="color:var(--color-text-tertiary);font-size:10px;padding-top:2px;padding-bottom:2px"><span class="field-name">unique(student_id, course_id)</span></div>
+      </div>
+    </div>
+    <div class="note">Validates course exists + is PUBLISHED (via Course Service) before writing. Triggers notification on enroll (fire-and-forget).</div>
+  </div>
+
+  <!-- PROGRESS DB -->
+  <div class="db-col">
+    <div class="db-header">progress_db · :8084</div>
+    <div class="entity" id="e-progress">
+      <div class="entity-header hdr-blue">
+        <span class="icon dot-progress"></span>lesson_progress
+      </div>
+      <div class="entity-body">
+        <div class="field"><span class="field-name">id</span><span class="badge badge-pk">PK</span><span class="field-type">uuid</span></div>
+        <div class="field"><span class="field-name">student_id</span><span class="badge badge-ref">REF</span><span class="field-type">users.id</span></div>
+        <div class="field"><span class="field-name">course_id</span><span class="badge badge-ref">REF</span><span class="field-type">courses.id</span></div>
+        <div class="field"><span class="field-name">lesson_id</span><span class="badge badge-ref">REF</span><span class="field-type">lessons.id</span></div>
+        <div class="field"><span class="field-name">completed_at</span><span class="field-type">timestamp</span></div>
+        <div class="field" style="color:var(--color-text-tertiary);font-size:10px;padding-top:2px;padding-bottom:2px"><span class="field-name">unique(student_id, lesson_id) · idempotent</span></div>
+      </div>
+    </div>
+    <div class="note">Checks enrollment before writing (via Enrollment Service). Validates lesson exists, fetches total lesson count (via Course Service) to compute % complete.</div>
+  </div>
+
+  <!-- NOTIFICATION DB -->
+  <div class="db-col">
+    <div class="db-header">notification_db · :8085</div>
+    <div class="entity" id="e-notifications">
+      <div class="entity-header hdr-amber">
+        <span class="icon dot-notification"></span>notifications
+      </div>
+      <div class="entity-body">
+        <div class="field"><span class="field-name">id</span><span class="badge badge-pk">PK</span><span class="field-type">uuid</span></div>
+        <div class="field"><span class="field-name">user_id</span><span class="badge badge-ref">REF</span><span class="field-type">users.id</span></div>
+        <div class="field"><span class="field-name">type</span><span class="field-type">varchar</span></div>
+        <div class="field"><span class="field-name">title</span><span class="field-type">varchar</span></div>
+        <div class="field"><span class="field-name">message</span><span class="field-type">text</span></div>
+        <div class="field"><span class="field-name">is_read</span><span class="field-type">boolean</span></div>
+        <div class="field"><span class="field-name">created_at</span><span class="field-type">timestamp</span></div>
+      </div>
+    </div>
+    <div class="note">Purely passive. Written to by Enrollment Service. No upstream service dependencies. Failure does not block callers.</div>
+  </div>
+
+</div>
+
+</body>
+</html>
