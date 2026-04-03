@@ -1,0 +1,36 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: progress-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/progress_db}
+    username: ${POSTGRES_USER:learnsphere}
+    password: ${POSTGRES_PASSWORD:learnsphere}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+jwt:
+  secret: ${JWT_SECRET:replace-this-in-production-with-a-256bit-base64-encoded-secret}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}   # 24 hours default
+
+course-service:
+  url: ${COURSE_SERVICE_URL:http://localhost:8082}
+
+enrollment-service:
+  url: ${ENROLLMENT_SERVICE_URL:http://localhost:8083}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
