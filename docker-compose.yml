@@ -71,5 +71,26 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       COURSE_SERVICE_URL: http://course-service:8082
 
+  progress-service:
+    build:
+      context: .
+      dockerfile: progress-service/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      course-service:
+        condition: service_healthy
+      enrollment-service:
+        condition: service_started
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/progress_db
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      COURSE_SERVICE_URL: http://course-service:8082
+      ENROLLMENT_SERVICE_URL: http://enrollment-service:8083
+
 volumes:
   pgdata:
