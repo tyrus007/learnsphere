@@ -26,6 +26,9 @@ jwt:
 course-service:
   url: ${COURSE_SERVICE_URL:http://localhost:8082}
 
+notification-service:
+  url: ${NOTIFICATION_SERVICE_URL:http://localhost:8085}
+
 management:
   endpoints:
     web:
