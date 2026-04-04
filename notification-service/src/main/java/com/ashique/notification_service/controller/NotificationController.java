@@ -16,10 +16,13 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/notifications")
-@RequiredArgsConstructor
 public class NotificationController {
 
     private final NotificationService notificationService;
+
+    public NotificationController(NotificationService notificationService){
+        this.notificationService = notificationService;
+    }
 
     @GetMapping("/me")
     public ResponseEntity<List<NotificationResponse>> getMyNotifications(
@@ -35,4 +38,6 @@ public class NotificationController {
         
         return ResponseEntity.ok(notificationService.markAsRead(id, user.userId()));
     }
+
+
 }
