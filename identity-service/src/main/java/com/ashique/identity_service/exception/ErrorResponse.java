@@ -1,9 +1,7 @@
 package com.ashique.identity_service.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.time.Instant;
-import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,7 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ErrorResponse {
 
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Instant timestamp;
 
     private int status;
