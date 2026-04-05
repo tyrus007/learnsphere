@@ -1,4 +1,4 @@
-package com.ashique.identity_service.exception;
+package com.ashique.notification_service.exception;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.Instant;

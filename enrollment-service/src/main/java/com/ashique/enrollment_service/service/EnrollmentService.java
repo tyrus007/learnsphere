@@ -1,6 +1,7 @@
 package com.ashique.enrollment_service.service;
 
 import com.ashique.enrollment_service.client.CourseServiceClient;
+import com.ashique.enrollment_service.client.NotificationServiceClient;
 import com.ashique.enrollment_service.client.client_dto.CourseStatus;
 import com.ashique.enrollment_service.client.client_dto.InternalCourseSummaryResponse;
 import com.ashique.enrollment_service.dto.EnrollRequest;
@@ -14,9 +15,11 @@ import com.ashique.enrollment_service.repository.EnrollmentRepository;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -24,6 +27,7 @@ public class EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
     private final CourseServiceClient courseServiceClient;
+    private final NotificationServiceClient notificationServiceClient;
 
     @Transactional
     public EnrollmentResponse enroll(UUID userId, EnrollRequest request, String authorizationHeader) {
@@ -44,6 +48,12 @@ public class EnrollmentService {
                 .courseId(request.getCourseId())
                 .status(EnrollmentStatus.ENROLLED)
                 .build());
+
+        try {
+            notificationServiceClient.sendEnrollmentNotification(userId, request.getCourseId(), authorizationHeader);
+        } catch (Exception e) {
+            log.warn("Failed to send enrollment notification for student {} and course {}", userId, request.getCourseId(), e);
+        }
 
         return toResponse(enrollment);
     }

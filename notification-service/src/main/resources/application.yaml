@@ -1,12 +1,12 @@
 server:
-  port: 8083
+  port: 8085
 
 spring:
   application:
-    name: enrollment-service
+    name: notification-service
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/enrollment_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/notification_db}
     username: ${POSTGRES_USER:learnsphere}
     password: ${POSTGRES_PASSWORD:learnsphere}
 
@@ -25,9 +25,6 @@ jwt:
 
 course-service:
   url: ${COURSE_SERVICE_URL:http://localhost:8082}
-
-notification-service:
-  url: ${NOTIFICATION_SERVICE_URL:http://localhost:8085}
 
 management:
   endpoints:
