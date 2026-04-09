@@ -53,6 +53,18 @@
       "value": "",
       "type": "string",
       "description": "UUID of the last notification."
+    },
+    {
+      "key": "student_user_id",
+      "value": "",
+      "type": "string",
+      "description": "UUID of the student user. Auto-populated by register/login scripts."
+    },
+    {
+      "key": "instructor_user_id",
+      "value": "",
+      "type": "string",
+      "description": "UUID of the instructor user. Auto-populated by register/login scripts."
     }
   ],
   "item": [
@@ -87,6 +99,7 @@
                   "if (pm.response.code === 201) {",
                   "  const body = pm.response.json();",
                   "  pm.collectionVariables.set('student_token', body.token);",
+                  "  pm.collectionVariables.set('student_user_id', body.userId);",
                   "  console.log('student_token set:', body.token);",
                   "}",
                   "pm.test('Register Student — 201 Created', () => pm.response.to.have.status(201));"
@@ -122,6 +135,7 @@
                   "if (pm.response.code === 201) {",
                   "  const body = pm.response.json();",
                   "  pm.collectionVariables.set('instructor_token', body.token);",
+                  "  pm.collectionVariables.set('instructor_user_id', body.userId);",
                   "  console.log('instructor_token set:', body.token);",
                   "}",
                   "pm.test('Register Instructor — 201 Created', () => pm.response.to.have.status(201));"
@@ -187,6 +201,7 @@
                   "if (pm.response.code === 200) {",
                   "  const body = pm.response.json();",
                   "  pm.collectionVariables.set('student_token', body.token);",
+                  "  pm.collectionVariables.set('student_user_id', body.userId);",
                   "  console.log('student_token refreshed:', body.token);",
                   "}",
                   "pm.test('Login Student — 200 OK', () => pm.response.to.have.status(200));"
@@ -222,6 +237,7 @@
                   "if (pm.response.code === 200) {",
                   "  const body = pm.response.json();",
                   "  pm.collectionVariables.set('instructor_token', body.token);",
+                  "  pm.collectionVariables.set('instructor_user_id', body.userId);",
                   "  console.log('instructor_token refreshed:', body.token);",
                   "}",
                   "pm.test('Login Instructor — 200 OK', () => pm.response.to.have.status(200));"
@@ -321,8 +337,7 @@
             "header": [],
             "url": {
               "raw": "http://localhost:8081/actuator/health",
-              "raw": "http://localhost:8081/actuator/health",
-              "host": ["localhost:8081"],
+              "host": ["http://localhost:8081"],
               "path": ["actuator", "health"]
             },
             "description": "Direct health check for the Identity Service (bypasses Gateway).\nExpected: 200 OK { status: UP }."
@@ -456,7 +471,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Module 1: Getting Started\"\n}"
+              "raw": "{\n  \"title\": \"Module 1: Getting Started\",\n  \"position\": 1\n}"
             },
             "url": {
               "raw": "{{gateway_url}}/api/courses/{{course_id}}/modules",
@@ -492,7 +507,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Lesson 1: What is a Microservice?\",\n  \"contentType\": \"TEXT\",\n  \"contentUrlOrBody\": \"A microservice is a small, independently deployable service...\",\n  \"isPreview\": true\n}"
+              "raw": "{\n  \"title\": \"Lesson 1: What is a Microservice?\",\n  \"contentType\": \"TEXT\",\n  \"contentUrlOrBody\": \"A microservice is a small, independently deployable service...\",\n  \"position\": 1,\n  \"isPreview\": true\n}"
             },
             "url": {
               "raw": "{{gateway_url}}/api/modules/{{module_id}}/lessons",

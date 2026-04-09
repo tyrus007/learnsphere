@@ -1,0 +1,1462 @@
+{
+	"info": {
+		"_postman_id": "c577d8c5-c76c-4f11-ba53-0cb3ff5e983e",
+		"name": "LearnSphere",
+		"description": "LearnSphere Microservices API Collection.\n\nOrganised by service:\n- **Auth** — Identity Service (register, login, profile)\n- **Courses** — Course Service (catalog & content)\n- **Enrollment** — Enrollment Service (student enrollment)\n- **Progress** — Progress Service (lesson completion & course progress)\n- **Notifications** — Notification Service (in-app notifications)\n\nBase URL is driven by the `gateway_url` environment variable.\nAfter login, `student_token` and `instructor_token` are set automatically by the post-response scripts.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "44810808"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"  const body = pm.response.json();",
+									"  pm.collectionVariables.set('student_token', body.token);",
+									"  pm.collectionVariables.set('student_user_id', body.userId);",
+									"  console.log('student_token set:', body.token);",
+									"}",
+									"pm.test('Register Student — 201 Created', () => pm.response.to.have.status(201));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Alice Student\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"STUDENT\"\n}"
+						},
+						"url": "{{gateway_url}}/api/auth/register",
+						"description": "Register a new STUDENT account.\nExpected: 201 Created with JWT in response body."
+					},
+					"response": []
+				},
+				{
+					"name": "Register Instructor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"  const body = pm.response.json();",
+									"  pm.collectionVariables.set('instructor_token', body.token);",
+									"  pm.collectionVariables.set('instructor_user_id', body.userId);",
+									"  console.log('instructor_token set:', body.token);",
+									"}",
+									"pm.test('Register Instructor — 201 Created', () => pm.response.to.have.status(201));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Bob Instructor\",\n  \"email\": \"bob@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"INSTRUCTOR\"\n}"
+						},
+						"url": "{{gateway_url}}/api/auth/register",
+						"description": "Register a new INSTRUCTOR account.\nExpected: 201 Created with JWT in response body."
+					},
+					"response": []
+				},
+				{
+					"name": "Register Duplicate Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Register Duplicate — 409 Conflict', () => pm.response.to.have.status(409));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"Alice Duplicate\",\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"STUDENT\"\n}"
+						},
+						"url": "{{gateway_url}}/api/auth/register",
+						"description": "Attempt to register with an already-used email.\nExpected: 409 Conflict."
+					},
+					"response": []
+				},
+				{
+					"name": "Login (Student)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"  const body = pm.response.json();",
+									"  pm.collectionVariables.set('student_token', body.token);",
+									"  pm.collectionVariables.set('student_user_id', body.userId);",
+									"  console.log('student_token refreshed:', body.token);",
+									"}",
+									"pm.test('Login Student — 200 OK', () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": "{{gateway_url}}/api/auth/login",
+						"description": "Login with valid student credentials.\nExpected: 200 OK with JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Login (Instructor)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"  const body = pm.response.json();",
+									"  pm.collectionVariables.set('instructor_token', body.token);",
+									"  pm.collectionVariables.set('instructor_user_id', body.userId);",
+									"  console.log('instructor_token refreshed:', body.token);",
+									"}",
+									"pm.test('Login Instructor — 200 OK', () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"bob@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": "{{gateway_url}}/api/auth/login",
+						"description": "Login with valid instructor credentials.\nExpected: 200 OK with JWT."
+					},
+					"response": []
+				},
+				{
+					"name": "Login Wrong Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Login Wrong Password — 401 Unauthorized', () => pm.response.to.have.status(401));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"wrongpassword\"\n}"
+						},
+						"url": "{{gateway_url}}/api/auth/login",
+						"description": "Attempt login with incorrect password.\nExpected: 401 Unauthorized."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Profile (Authenticated)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Get Profile — 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Profile has email field', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('email');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{instructor_token}}"
+							}
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}",
+								"disabled": true
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": "{{gateway_url}}/api/users/me",
+						"description": "Retrieve the authenticated user's profile using a valid Bearer token.\nExpected: 200 OK with userId, fullName, email, role, createdAt."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Profile (No Token)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get Profile No Token — 401 Unauthorized', () => pm.response.to.have.status(401));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{gateway_url}}/api/users/me",
+						"description": "Attempt to fetch profile without a Bearer token.\nExpected: 401 Unauthorized."
+					},
+					"response": []
+				},
+				{
+					"name": "Actuator Health (Identity Service)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Identity Service Health — UP', () => {",
+									"  pm.response.to.have.status(200);",
+									"  pm.expect(pm.response.json().status).to.eql('UP');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:8081/actuator/health",
+						"description": "Direct health check for the Identity Service (bypasses Gateway).\nExpected: 200 OK { status: UP }."
+					},
+					"response": []
+				}
+			],
+			"description": "Identity Service — authentication and user profile endpoints.\nBase path: /api/auth and /api/users\nService port (direct): 8081"
+		},
+		{
+			"name": "Courses",
+			"item": [
+				{
+					"name": "Actuator Health (Course Service)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Course Service Health — UP', () => {",
+									"  pm.response.to.have.status(200);",
+									"  pm.expect(pm.response.json().status).to.eql('UP');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8082/actuator/health",
+						"description": "Direct health check for the Course Service (bypasses Gateway).\nExpected: 200 OK { status: UP }."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Course (Instructor)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Create Course — 201 Created', () => pm.response.to.have.status(201));",
+									"if (pm.response.code === 201) {",
+									"  const body = pm.response.json();",
+									"  pm.collectionVariables.set('course_id', body.id);",
+									"  console.log('course_id set:', body.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Introduction to Microservices\",\n  \"description\": \"A practical guide to building microservices with Spring Boot.\",\n  \"level\": \"BEGINNER\",\n  \"category\": \"Software Engineering\"\n}"
+						},
+						"url": "{{gateway_url}}/api/courses",
+						"description": "Create a new course as an INSTRUCTOR. Status defaults to DRAFT.\nExpected: 201 Created."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Course (Student — Forbidden)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Create Course as Student — 403 Forbidden', () => pm.response.to.have.status(403));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Unauthorized Course\",\n  \"description\": \"This should be rejected.\",\n  \"level\": \"BEGINNER\",\n  \"category\": \"Test\"\n}"
+						},
+						"url": "{{gateway_url}}/api/courses",
+						"description": "Attempt to create a course as a STUDENT.\nExpected: 403 Forbidden."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Update Course — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Introduction to Microservices (Updated)\",\n  \"description\": \"Updated description.\",\n  \"level\": \"INTERMEDIATE\",\n  \"category\": \"Software Engineering\"\n}"
+						},
+						"url": "{{gateway_url}}/api/courses/{{course_id}}",
+						"description": "Update course details. Must be the owning instructor.\nExpected: 200 OK."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Module to Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Add Module — 201 Created', () => pm.response.to.have.status(201));",
+									"if (pm.response.code === 201) {",
+									"  const body = pm.response.json();",
+									"  pm.collectionVariables.set('module_id', body.id);",
+									"  console.log('module_id set:', body.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Module 1: Getting Started\",\n  \"position\": 1\n}"
+						},
+						"url": "{{gateway_url}}/api/courses/{{course_id}}/modules",
+						"description": "Add a module to the course. Must be the owning instructor.\nExpected: 201 Created."
+					},
+					"response": []
+				},
+				{
+					"name": "Add Lesson to Module",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Add Lesson — 201 Created', () => pm.response.to.have.status(201));",
+									"if (pm.response.code === 201) {",
+									"  const body = pm.response.json();",
+									"  pm.collectionVariables.set('lesson_id', body.id);",
+									"  console.log('lesson_id set:', body.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Lesson 1: What is a Microservice?\",\n  \"contentType\": \"TEXT\",\n  \"contentUrlOrBody\": \"A microservice is a small, independently deployable service...\",\n  \"position\": 1,\n  \"isPreview\": true\n}"
+						},
+						"url": "{{gateway_url}}/api/modules/{{module_id}}/lessons",
+						"description": "Add a lesson to a module. Must be the owning instructor.\nExpected: 201 Created."
+					},
+					"response": []
+				},
+				{
+					"name": "Publish Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Publish Course — 200 OK', () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/courses/{{course_id}}/publish",
+						"description": "Publish a DRAFT course. Must be the owning instructor.\nExpected: 200 OK."
+					},
+					"response": []
+				},
+				{
+					"name": "Unpublish Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Unpublish Course — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/courses/{{course_id}}/unpublish",
+						"description": "Unpublish a PUBLISHED course (back to DRAFT). Must be the owning instructor.\nExpected: 200 OK."
+					},
+					"response": []
+				},
+				{
+					"name": "List Published Courses (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('List Published Courses — 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Response is an array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{gateway_url}}/api/courses",
+						"description": "Fetch all PUBLISHED courses. No authentication required.\nExpected: 200 OK with array."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course Detail (Public)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get Course Detail — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "{{gateway_url}}/api/courses/{{course_id}}",
+						"description": "Fetch full course detail including modules and lessons. Public for PUBLISHED courses.\nExpected: 200 OK."
+					},
+					"response": [
+						{
+							"name": "Get Course Detail (Public)",
+							"originalRequest": {
+								"method": "GET",
+								"header": [],
+								"url": "{{gateway_url_course}}/api/courses/{{course_id}}"
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": null,
+							"header": [
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Cache-Control",
+									"value": "no-cache, no-store, max-age=0, must-revalidate"
+								},
+								{
+									"key": "Pragma",
+									"value": "no-cache"
+								},
+								{
+									"key": "Expires",
+									"value": "0"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "DENY"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Date",
+									"value": "Fri, 03 Apr 2026 19:12:15 GMT"
+								},
+								{
+									"key": "Keep-Alive",
+									"value": "timeout=60"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"id\": \"d85bd9e0-4a8b-4ac6-927f-933dd30f9809\",\n    \"instructorId\": \"5d2d8330-e711-4c2d-ae44-d5148da9f5f0\",\n    \"title\": \"Introduction to Microservices\",\n    \"description\": \"A practical guide to building microservices with Spring Boot.\",\n    \"level\": \"BEGINNER\",\n    \"category\": \"Software Engineering\",\n    \"status\": \"PUBLISHED\",\n    \"createdAt\": \"2026-03-19T19:59:02.080461Z\",\n    \"modules\": [\n        {\n            \"id\": \"f82abe56-c9cf-483c-87d3-439549c46dfa\",\n            \"courseId\": \"d85bd9e0-4a8b-4ac6-927f-933dd30f9809\",\n            \"title\": \"Module 1: Getting Started\",\n            \"position\": 1,\n            \"lessons\": [\n                {\n                    \"id\": \"6bb3f992-d1b9-46d1-bfb2-5cade52ac1fa\",\n                    \"moduleId\": \"f82abe56-c9cf-483c-87d3-439549c46dfa\",\n                    \"title\": \"Lesson 1: What is a Microservice?\",\n                    \"contentType\": \"TEXT\",\n                    \"contentUrlOrBody\": \"A microservice is a small, independently deployable service...\",\n                    \"position\": 1,\n                    \"isPreview\": true\n                }\n            ]\n        },\n        {\n            \"id\": \"b259f891-0078-4cc9-abaa-be33444778b3\",\n            \"courseId\": \"d85bd9e0-4a8b-4ac6-927f-933dd30f9809\",\n            \"title\": \"Module 2: Leaning Spring Boot\",\n            \"position\": 2,\n            \"lessons\": [\n                {\n                    \"id\": \"dd698fe9-2712-46aa-a4f7-b9a0febc32d5\",\n                    \"moduleId\": \"b259f891-0078-4cc9-abaa-be33444778b3\",\n                    \"title\": \"Lesson 1: What is a Spring Boot?\",\n                    \"contentType\": \"TEXT\",\n                    \"contentUrlOrBody\": \"Spring Boot is a frame work for java ...\",\n                    \"position\": 1,\n                    \"isPreview\": true\n                }\n            ]\n        }\n    ]\n}"
+						}
+					]
+				},
+				{
+					"name": "Get Course Modules",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Get Modules — 200 OK', () => pm.response.to.have.status(200));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/courses/{{course_id}}/modules",
+						"description": "List all modules (with lessons) for a course.\nExpected: 200 OK."
+					},
+					"response": []
+				},
+				{
+					"name": "Internal — Course Exists",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Internal Course Exists — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": "localhost:8082/api/internal/courses/{{course_id}}/exists",
+						"description": "Internal endpoint — check if a course exists and its status.\nCalled directly on Course Service (port 8082), NOT through the Gateway.\nExpected: 200 OK { exists: true, status: 'PUBLISHED' }."
+					},
+					"response": []
+				},
+				{
+					"name": "Internal — Lesson Count",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Internal Lesson Count — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"url": "localhost:8082/api/internal/courses/{{course_id}}/lesson-count",
+						"description": "Internal endpoint — get total lesson count for a course.\nExpected: 200 OK { lessonCount: N }."
+					},
+					"response": []
+				},
+				{
+					"name": "Edit Course (Different Instructor — Forbidden)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Edit Other Instructor Course — 403 Forbidden', () => pm.response.to.have.status(403));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Hijacked Title\",\n  \"description\": \"Should not work.\",\n  \"level\": \"BEGINNER\",\n  \"category\": \"Test\"\n}"
+						},
+						"url": "{{gateway_url}}/api/courses/{{course_id}}",
+						"description": "Attempt to update a course owned by a different instructor.\nExpected: 403 Forbidden."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Courses (Instructor)",
+					"request": {
+						"method": "GET",
+						"header": []
+					},
+					"response": []
+				}
+			],
+			"description": "Course Service — course catalog, modules, and lessons.\nBase path: /api/courses, /api/modules\nService port (direct): 8082"
+		},
+		{
+			"name": "Enrollment",
+			"item": [
+				{
+					"name": "Enroll in Course (Student)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Enroll — 201 Created', () => pm.response.to.have.status(201));",
+									"if (pm.response.code === 201) {",
+									"  const body = pm.response.json();",
+									"  pm.collectionVariables.set('enrollment_id', body.id);",
+									"  console.log('enrollment_id set:', body.id);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": "{{gateway_url}}/api/enrollments",
+						"description": "Enroll in a PUBLISHED course as a STUDENT.\nExpected: 201 Created."
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll Again (Duplicate — Conflict)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Enroll Duplicate — 409 Conflict', () => pm.response.to.have.status(409));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": "{{gateway_url}}/api/enrollments",
+						"description": "Attempt to enroll in the same course twice.\nExpected: 409 Conflict."
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll in Non-Existent Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Enroll Non-Existent Course — 400 Bad Request', () => pm.response.to.have.status(400));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"00000000-0000-0000-0000-000000000000\"\n}"
+						},
+						"url": "{{gateway_url}}/api/enrollments",
+						"description": "Attempt to enroll in a course that doesn't exist.\nExpected: 400 Bad Request."
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll in Unpublished Course",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Enroll Unpublished Course — 400 Bad Request', () => pm.response.to.have.status(400));"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id_unpub}}\"\n}"
+						},
+						"url": "{{gateway_url}}/api/enrollments",
+						"description": "Attempt to enroll in a DRAFT/unpublished course.\nPre-condition: unpublish the course first using the Unpublish request in the Courses folder.\nExpected: 400 Bad Request."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Enrollments",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get My Enrollments — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/enrollments/me",
+						"description": "List all enrollments for the authenticated student.\nExpected: 200 OK with array."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Enrollments for Course (Instructor)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get Course Enrollments — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/courses/{{course_id}}/enrollments",
+						"description": "Instructor views students enrolled in their course.\nExpected: 200 OK with list of enrollments."
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll — Course Service Down (503)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Enroll Course Service Down — 503', () => pm.response.to.have.status(503));",
+									"pm.test('Error message is readable', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body.message).to.be.a('string').and.not.include('Connection refused');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": "{{gateway_url}}/api/enrollments",
+						"description": "Pre-condition: stop the course-service container first (`docker compose stop course-service`).\nExpected: 503 Service Unavailable with a clean, human-readable error message (not a raw connection error)."
+					},
+					"response": []
+				}
+			],
+			"description": "Enrollment Service — student enrollment in published courses.\nBase path: /api/enrollments\nService port (direct): 8083\n\nKey cross-service flows tested here:\n- Enroll in a valid published course\n- Enroll in non-existent or unpublished course\n- Detect Course Service unavailability (stop course-service container before \"Service Down\" test)"
+		},
+		{
+			"name": "Progress",
+			"item": [
+				{
+					"name": "Mark Lesson Complete",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Mark Lesson Complete — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": "{{gateway_url}}/api/progress/lessons/{{lesson_id}}/complete",
+						"description": "Mark a lesson as completed. Idempotent — calling again returns the existing record.\nExpected: 200 OK."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Lesson Complete (Idempotent — 2nd Call)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Mark Lesson Complete Idempotent — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": "{{gateway_url}}/api/progress/lessons/{{lesson_id}}/complete",
+						"description": "Mark the same lesson complete a second time. Should be idempotent (no duplicate record).\nExpected: 200 OK (same response as first call)."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Lesson — Not Enrolled (403)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Mark Lesson Not Enrolled — 403 Forbidden', () => pm.response.to.have.status(403));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{instructor_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": "{{gateway_url}}/api/progress/lessons/{{lesson_id}}/complete",
+						"description": "Attempt to mark a lesson complete when not enrolled in the course.\nExpected: 403 Forbidden."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course Progress",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get Course Progress — 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Response has percentage field', () => {",
+									"  const body = pm.response.json();",
+									"  pm.expect(body).to.have.property('percentage');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/progress/courses/{{course_id}}",
+						"description": "Get the student's progress for a specific course.\nExpected: 200 OK with { courseId, completedLessons, totalLessons, percentage }."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Dashboard (All Courses Progress)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get Dashboard — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/progress/me",
+						"description": "Get aggregated progress across all enrolled courses for the student.\nExpected: 200 OK with array of CourseProgressResponse."
+					},
+					"response": []
+				}
+			],
+			"description": "Progress Service — lesson completion tracking and course progress.\nBase path: /api/progress\nService port (direct): 8084\n\nPre-condition: student must be enrolled in the course before marking lessons complete."
+		},
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Get My Notifications",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Get Notifications — 200 OK', () => pm.response.to.have.status(200));",
+									"pm.test('Response is an array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+									"if (pm.response.code === 200) {",
+									"  const body = pm.response.json();",
+									"  if (body.length > 0) {",
+									"    pm.collectionVariables.set('notification_id', body[0].id);",
+									"    console.log('notification_id set:', body[0].id);",
+									"  }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/notifications/me",
+						"description": "Fetch all notifications for the authenticated user, ordered newest first.\nExpected: 200 OK with array of notifications."
+					},
+					"response": []
+				},
+				{
+					"name": "Mark Notification as Read",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Mark Notification Read — 200 OK', () => pm.response.to.have.status(200));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"url": "{{gateway_url}}/api/notifications/{{notification_id}}/read",
+						"description": "Mark a specific notification as read.\nPre-condition: run 'Get My Notifications' first to populate notification_id.\nExpected: 200 OK."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Notification (Service-to-Service)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Create Notification — 201 Created', () => pm.response.to.have.status(201));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"<replace-with-student-uuid>\",\n  \"type\": \"ENROLLMENT\",\n  \"title\": \"You enrolled in a course!\",\n  \"message\": \"Welcome to Introduction to Microservices. Happy learning!\"\n}"
+						},
+						"url": "{{gateway_url}}/api/notifications",
+						"description": "Manually create a notification (normally called by Enrollment Service internally).\nExpected: 201 Created."
+					},
+					"response": []
+				},
+				{
+					"name": "Enroll — Notification Service Down (Enrollment Succeeds)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Enroll — Notification Service Down — Still 201', () => pm.response.to.have.status(201));"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{student_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"courseId\": \"{{course_id}}\"\n}"
+						},
+						"url": "{{gateway_url}}/api/enrollments",
+						"description": "Pre-condition: stop the notification-service container (`docker compose stop notification-service`).\nKey test: enrollment must STILL SUCCEED even though the Notification Service is down.\nExpected: 201 Created (non-critical dependency failure is swallowed).\nCheck logs for a warning: should see 'Notification service unavailable' or similar, NOT a 500 error."
+					},
+					"response": []
+				},
+				{
+					"name": "Actuator Health (Notification Service)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test('Notification Service Health — UP', () => {",
+									"  pm.response.to.have.status(200);",
+									"  pm.expect(pm.response.json().status).to.eql('UP');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "localhost:8085/actuator/health",
+						"description": "Direct health check for the Notification Service.\nExpected: 200 OK { status: UP }."
+					},
+					"response": []
+				}
+			],
+			"description": "Notification Service — in-app notifications for students.\nBase path: /api/notifications\nService port (direct): 8085\n\nNotifications are created automatically on enrollment.\nTest: stop Notification Service, enroll → enrollment should still succeed (non-critical dependency)."
+		}
+	],
+	"variable": [
+		{
+			"key": "gateway_url",
+			"value": "http://localhost:8080",
+			"type": "string",
+			"description": {
+				"content": "API Gateway base URL. Change to http://localhost:808X to hit a service directly during development.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "student_token",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "JWT for the student account. Auto-populated by the Login (Student) request script.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "instructor_token",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "JWT for the instructor account. Auto-populated by the Login (Instructor) request script.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "course_id",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "UUID of the last created course. Set manually or by a test script.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "module_id",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "UUID of the last created module.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "lesson_id",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "UUID of the last created lesson.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "enrollment_id",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "UUID of the last created enrollment.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "notification_id",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "UUID of the last notification.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "student_user_id",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "UUID of the student user. Auto-populated by register/login scripts.",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "instructor_user_id",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "UUID of the instructor user. Auto-populated by register/login scripts.",
+				"type": "text/plain"
+			}
+		}
+	]
+}
